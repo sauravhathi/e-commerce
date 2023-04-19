@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { BsBag, BsSearch } from "react-icons/bs";
+import { BsCart2, BsSearch } from "react-icons/bs";
+import { RiLogoutCircleRLine } from "react-icons/ri";
 
 const Home = () => {
+  const siteTitle = "EcomHub";
+  const [cardHover, setCardHover] = useState(-1);
+  const [showCart, setShowCart] = useState(false);
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
-  const [limit, setLimit] = useState(3);
+  const [limit, setLimit] = useState(4);
   const [totalPages, setTotalPages] = useState(0);
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [cart, setCart] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
   const [categoryList, setCategoryList] = useState([
     "electronics",
     "sports",
@@ -27,7 +32,7 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchProducts = async () => {
+  const getProducts = async () => {
     try {
       setLoading(true);
       const response = await axios.get('/products', {
@@ -51,7 +56,7 @@ const Home = () => {
           setMessage("No product found");
         }
         if (category) {
-          setMessage(data.length + " products found");
+          setMessage(`${category} - ${data.products.length} items`);
         } else {
           setMessage("");
         }
@@ -62,17 +67,15 @@ const Home = () => {
     }
   };
 
-  const pagination = () => {
+  const getPagination = () => {
     if (totalPages === 0) {
       return null;
     }
-
     return (
-      <div className="flex justify-center items-center mt-4 gap-2">
+      <div className="flex justify-center items-center mt-4 mb-10 gap-2">
         <button
-          className={`${page === 1 ? "bg-gray-300" : "bg-indigo-600"
+          className={`${page === 1 ? "bg-sky-300" : "bg-sky-600"
             } text-white px-4 py-2 rounded-l`}
-
           onClick={() => {
             if (page > 1) {
               setPage(page - 1);
@@ -84,9 +87,8 @@ const Home = () => {
         {Array(totalPages).fill(0).map((_, index) => (
           <button
             key={index + 1}
-            className={`${page === index + 1 ? "bg-gray-300" : "bg-indigo-600"
-              } text-white px-4 py-2`}
-
+            className={`${page === index + 1 ? "bg-sky-300" : "bg-sky-600"
+              } text-white px-4 py-2 rounded-md`}
             onClick={() => {
               setPage(index + 1);
             }}
@@ -95,9 +97,8 @@ const Home = () => {
           </button>
         ))}
         <button
-          className={`${page === totalPages ? "bg-gray-300" : "bg-indigo-600"
+          className={`${page === totalPages ? "bg-sky-300" : "bg-sky-600"
             } text-white px-4 py-2 rounded-r`}
-
           onClick={() => {
             if (page < totalPages) {
               setPage(page + 1);
@@ -114,8 +115,8 @@ const Home = () => {
   useEffect(() => {
     if (!isuseEffectCalled) {
       isuseEffectCalled = true;
-      fetchProducts();
-      getUserDetails();
+      getProducts();
+      getDetails();
     }
   }, [category, page, limit, sortField, sortOrder]);
 
@@ -127,7 +128,7 @@ const Home = () => {
     );
   }
 
-  const getUserDetails = async () => {
+  const getDetails = async () => {
     try {
       const response = await fetch('/user/details', {
         method: 'GET',
@@ -181,7 +182,7 @@ const Home = () => {
     }
   };
 
-  const logout = async (e) => {
+  const userLogout = async (e) => {
     e.preventDefault();
     try {
       localStorage.removeItem('token');
@@ -212,97 +213,159 @@ const Home = () => {
     }
   };
 
+  const getCart = async () => {
+    try {
+      if (cart === 0) {
+        return null;
+      }
+      const response = await fetch('/cart', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'auth-token': localStorage.getItem('token')
+        }
+      });
+      const data = await response.json();
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setCartItems(data.cartItems);
+      }
+    } catch (error) {
+      setError(error);
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
       <div className="flex justify-between items-center py-4 sticky top-0 bg-white z-10">
         <div className="flex items-center">
-          <h1 className="text-2xl font-bold ml-2">Ecommerce</h1>
+          <h1 className="text-2xl font-bold ml-2">
+            <span className="text-sky-600">
+              {siteTitle.split(/(?=[A-Z])/)[0]}
+            </span>
+            {siteTitle.split(/(?=[A-Z])/)[1]}
+          </h1>
         </div>
         <div className="flex items-center">
           <div className="flex items-center relative">
             <input
               type="text"
-              className="border border-gray-300 rounded-md px-2 py-1 mr-2 focus:placeholder-transparent focus:outline-none"
-              placeholder="Search"
+              className="pl-10 pr-4 py-2 rounded-full w-34 md:w-[400px] bg-sky-100 focus:bg-transparent focus:outline-sky-200 focus:placeholder-transparent"
+              placeholder="Search for products, brands and more"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && searchProduct(e)}
             />
             <BsSearch
-              className="text-2xl cursor-pointer hidden md:block"
+              className="absolute left-3 top-3 text-sky-400"
               onClick={(e) => searchProduct(e)}
             />
           </div>
         </div>
-        <div className="flex items-center">
-          <div className="flex items-center">
-            <p className="text-gray-600 mr-2 hidden md:block">{!user ? "Guest" : "Hi, " + user.name}</p>
-            <div className="flex items-center relative mr-2">
-              <BsBag className="text-2xl" />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <p className="text-sky-600 px-1 py-0 rounded-md border-2 border-sky-600 hidden md:block">{!user ? "Guest" : user.name.split(" ")[0]}</p>
+            <div className="flex items-center relative mr-2" onMouseEnter={() => { setShowCart(true); getCart(); }} onMouseLeave={() => setShowCart(false)}>
+              <BsCart2 className="text-2xl text-sky-600" />
               {cart > 0 && (
-                <p className="text-white bg-slate-600 rounded-full px-1 ml-1 absolute -top-2 -right-2">
+                <p className="text-white bg-sky-600 rounded-full px-1 ml-1 absolute -top-2 -right-2">
                   {cart}
                 </p>
               )}
+              {showCart && (
+                <div className="absolute top-5 right-0 w-80 bg-white rounded-md shadow-md p-2">
+                  {
+                    cartItems.length === 0 ? (
+                      <p className="text-red-600">No items in cart</p>
+                    ) :
+                      cartItems.map((item) => (
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2">
+                            <img src={item.image} alt="" className="w-12 h-12 object-cover" />
+                            <div className="flex flex-col">
+                              <p className="text-sm">{item.name}</p>
+                              <p className="text-xs bg-sky-500">Rs. {item.price}</p>
+                              <p className="text-xs bg-sky-500">Qty: {item.quantity}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                  }
+                </div>
+              )}
             </div>
           </div>
-          <button
-            className="bg-slate-600 text-white rounded-md px-2 py-1 ml-2"
-            onClick={logout}
-          >
-            Logout
-          </button>
+          <div className="flex items-center cursor-pointer " onClick={userLogout}>
+            <p className="text-sky-600 mr-2 hidden md:block">{!user ? "Login" : "Logout"}</p>
+            <div className="flex items-center relative">
+              <RiLogoutCircleRLine className="text-2xl text-sky-600 " onClick={userLogout} />
+            </div>
+          </div>
         </div>
       </div>
-      <div className="sticky top-16 bg-white z-10 flex justify-start items-center gap-2 p-2">
-        <p className="text-gray-600 text-center">Categories</p>
-        <select
-          className="border border-gray-300 rounded-md px-2 py-1 mr-2 focus:placeholder-transparent focus:outline-none"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+      <ul className="flex flex-wrap gap-2 justify-center mt-4">
+        <li
+          className={`${category === "" ? "bg-sky-600 text-white" : "bg-sky-100"
+            } px-2 py-1 rounded-md cursor-pointer`}
+          onClick={() => setCategory("")}
         >
-          <option value="">All</option>
-          {categoryList.map((categoryItem) => (
-            <option value={categoryItem} key={categoryItem}>
-              {categoryItem}
-            </option>
-          ))}
-        </select>
-      </div>
+          All
+        </li>
+        {categoryList.map((categoryItem) => (
+          <li
+            className={`${category === categoryItem
+              ? "bg-sky-600 text-white"
+              : "bg-sky-100"
+              } px-2 py-1 rounded-md cursor-pointer`}
+            onClick={() => setCategory(categoryItem)}
+            key={categoryItem}
+          >
+            {categoryItem}
+          </li>
+        ))}
+      </ul>
       {message && (
-        <p className="text-red-600 text-center">{message}</p>
+        <p className="text-red-600 text-center mt-2">{message}</p>
       )}
-      <div className="flex flex-wrap justify-center items-center gap-2 p-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-4 gap-4">
         {products.map((product, index) => (
           <div
-            className="w-64 h-54 flex flex-col justify-between items-center border border-gray-300 rounded-md p-2"
+            className={`${cardHover === index ? "shadow-xl" : "shadow-md"
+              } transition-all duration-300 transform hover:scale-[1.01] rounded-md p-2`}
+            onMouseEnter={() => setCardHover(index)}
+            onMouseLeave={() => setCardHover(-1)}
             key={index}
           >
             <img
               src={product.image}
               alt={product.name}
-              className="object-contain h-40 w-40"
+              className="w-full h-64 object-fill"
             />
-            <div className="flex flex-col justify-start">
-              <p className="text-gray-600 text-center">{product.brand}</p>
-              <p className="text-gray-600 text-center">{product.name}</p>
-              <p>
-                <span className="">
-                  {product.price} ₹
+            <div className="flex flex-col">
+              <p className="text-sky-600">{product.brand}</p>
+              <p className="text-sky-600">{product.name}</p>
+              <p className="flex items-center gap-2">
+                <span className="text-sky-600">
+                  Rs. {product.price}
                 </span>
-                {product.discount > 0 && (
-                  <span className="text-gray-600 line-through ml-2">
-                    {((product.price * (100 + product.discount)) / 100).toFixed(2)} ₹
-                  </span>
-                )}
-                <span className="text-gray-600 ml-2">
-                  {product.discount}% off
-                </span>
+                {
+                  product.discount > 0 && (
+                    <><span className="text-sm line-through text-gray-400">
+                      {((product.price * (100 + product.discount)) / 100).toFixed(2)} ₹
+                    </span><span className="text-red-600">
+                        {product.discount}% off
+                      </span></>
+                  )
+                }
+              </p>
+              <p className="text-red-600">
+                {product.stock < 6 ? "Only few left" : "In stock"}
               </p>
             </div>
             <div className="flex justify-center items-center">
               <button
-                className="bg-slate-600 text-white rounded-md px-2 py-1 ml-2"
+                className="w-full bg-sky-600 text-white py-1 rounded-md"
                 onClick={(e) => addToCart(e, product)}
               >
                 Add to cart
@@ -311,7 +374,7 @@ const Home = () => {
           </div>
         ))}
       </div>
-      {pagination()}
+      {getPagination()}
     </div>
   );
 }

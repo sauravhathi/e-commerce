@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import axios from "axios";
 
 const Login = () => {
@@ -19,6 +20,11 @@ const Login = () => {
             email,
             password,
         };
+        if (email === '' || password === '') {
+            setStatus('error');
+            setMessage('Please fill in all fields');
+            return;
+        }
         console.log(user);
         try {
             const res = await axios.post('/login', user);
@@ -35,73 +41,48 @@ const Login = () => {
     };
 
     return (
-        <div className="max-w-7xl h-screen mx-auto flex justify-center items-center">
-            <div className="w-full max-w-sm">
-                <div className="flex flex-col break-words bg-white border-2 rounded shadow-md">
-                    <div className="font-semibold bg-gray-200 text-gray-700 py-3 px-6 mb-0">
+        <div className="h-screen flex justify-center items-center bg-sky-100">
+            <div className="bg-white p-16 rounded shadow-2xl w-1/3">
+                <h2 className="text-3xl font-bold mb-10 text-center">Login</h2>
+                {status === 'error' && <p className="text-red-500 text-sm mb-5 text-center ">{message}</p>}
+                <div className="mb-5">
+                    <label className="block mb-2 text-sm font-bold text-sky-700" htmlFor="email">Email</label>
+                    <input
+                        className="w-full px-3 py-2 text-sm leading-tight text-sky-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="mb-5">
+                    <label className="block mb-2 text-sm font-bold text-sky-700" htmlFor="password">Password</label>
+                    <input
+                        className="w-full px-3 py-2 mb-3 text-sm leading-tight text-sky-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="mb-6 text-center">
+                    <button
+                        className="w-full px-4 py-2 font-bold text-white bg-sky-500 rounded-full hover:bg-sky-700 focus:outline-none focus:shadow-outline"
+                        type="button"
+                        onClick={handleSubmit}
+                    >
                         Login
-                    </div>
-                    <div className="w-full p-6">
-                        <form className="w-full" onSubmit={handleSubmit}>
-                            <div className="flex flex-wrap mb-6">
-                                <label
-                                    htmlFor="email"
-                                    className="block text-gray-700 text-sm font-bold mb-2"
-                                >
-                                    Email:
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="p-3 bg-gray-200 rounded form-input w-full"
-                                    placeholder="Enter your email"
-                                />
-                            </div>
-                            <div className="flex flex-wrap mb-6">
-                                <label
-                                    htmlFor="password"
-                                    className="block text-gray-700 text-sm font-bold mb-2"
-                                >
-                                    Password:
-                                </label>
-                                <input
-                                    type="password"
-                                    name="password"
-                                    id="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="p-3 bg-gray-200 rounded form-input w-full"
-                                    placeholder="Enter your password"
-                                />
-                            </div>
-                            <div className="flex flex-wrap">
-                                <button
-                                    type="submit"
-                                    className="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded"
-                                >
-                                    Login
-                                </button>
-                            </div>
-                        </form>
-                        <div className="text-center mt-4 font-light text-gray-700">
-                            {status === 'success' ? (
-                                <div className="text-green-500">{message}</div>
-                            ) : (
-                                <div className="text-red-500">{message}</div>
-                            )}
-                        </div>
-                        <div className="flex justify-between items-center mt-4">
-                            <a
-                                href="/register"
-                                className="inline-block align-baseline font-bold text-sm text-slate-500 hover:text-slate-800"
-                            >
-                                Register
-                            </a>
-                        </div>
-                    </div>
+                    </button>
+                </div>
+                <hr className="mb-6 border-t" />
+                <div className="text-center">
+                    <Link to="/register" className="inline-block text-sm text-sky-500 align-baseline hover:text-blue-800">
+                        Create an Account!
+                    </Link>
                 </div>
             </div>
         </div>
