@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import { BsCart2, BsSearch } from "react-icons/bs";
 import { RiLogoutCircleRLine } from "react-icons/ri";
@@ -15,10 +14,13 @@ const Home = () => {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(4);
   const [totalPages, setTotalPages] = useState(0);
+  // eslint-disable-next-line
   const [sortField, setSortField] = useState("createdAt");
+  // eslint-disable-next-line
   const [sortOrder, setSortOrder] = useState("desc");
   const [cart, setCart] = useState(0);
   const [cartItems, setCartItems] = useState([]);
+  // eslint-disable-next-line
   const [categoryList, setCategoryList] = useState([
     "electronics",
     "sports",
@@ -114,6 +116,7 @@ const Home = () => {
   let isuseEffectCalled = false;
   useEffect(() => {
     if (!isuseEffectCalled) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       isuseEffectCalled = true;
       getProducts();
       getDetails();
@@ -282,11 +285,11 @@ const Home = () => {
                       cartItems.map((item) => (
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="flex items-center gap-2">
-                            <img src={item.image} alt="" className="w-12 h-12 object-cover" />
+                            <img src={item.image} alt="" className="w-12 h-12 object-contain" />
                             <div className="flex flex-col">
                               <p className="text-sm">{item.name}</p>
-                              <p className="text-xs bg-sky-500">Rs. {item.price}</p>
-                              <p className="text-xs bg-sky-500">Qty: {item.quantity}</p>
+                              <p className="text-xs">Rs. {item.price}</p>
+                              <p className="text-xs">Qty: {item.quantity}</p>
                             </div>
                           </div>
                         </div>

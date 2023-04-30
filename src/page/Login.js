@@ -25,10 +25,8 @@ const Login = () => {
             setMessage('Please fill in all fields');
             return;
         }
-        console.log(user);
         try {
             const res = await axios.post('/login', user);
-            console.log(res.data);
             setStatus(res.data.status);
             setMessage(res.data.message);
             if (res.data.status === 'success') {
@@ -36,7 +34,7 @@ const Login = () => {
                 window.location.href = '/home';
             }
         } catch (err) {
-            console.log(err);
+            setStatus('error');
         }
     };
 
