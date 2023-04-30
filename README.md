@@ -1,10 +1,20 @@
-first time registering then use name `Admin`, password `admin` and email `admin@gmail.com`.
+# EcomHub
+EcomHub is an e-commerce web application built with React and Node.js.
 
-## How to run
+## Features
+- Display a list of products with pagination and sorting
+- Search products by name
+- Filter products by category
+- Add products to the cart
+- View cart items and total price
+- Register and login with JWT authentication
+- Logout and clear user token
 
-### Run using npm
-
-```bash
-npm install
-npm start
-```
+## Technologies Used
+- React.js
+- Node.js
+- Express.js
+- MongoDB
+- JWT
+- Axios
+- React-Icons
